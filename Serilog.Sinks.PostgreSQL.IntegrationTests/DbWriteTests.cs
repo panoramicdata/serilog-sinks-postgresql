@@ -1,238 +1,234 @@
-using System;
-using System.Collections.Generic;
 using NpgsqlTypes;
 using Serilog.Sinks.PostgreSQL.IntegrationTests.Objects;
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Serilog.Sinks.PostgreSQL.IntegrationTests
 {
-    public class DbWriteTests
-    {
-        private const string _connectionString = "User ID=serilog;Password=serilog;Host=localhost;Port=5432;Database=serilog_logs";
+	public class DbWriteTests
+	{
+		private const string _connectionString = "User ID=serilog;Password=serilog;Host=localhost;Port=5432;Database=serilog_logs";
 
-        private const string _tableName = "logs";
+		private const string _tableName = "logs";
 
+		private readonly DbHelper _dbHelper = new DbHelper(_connectionString);
 
-        private DbHelper _dbHelper = new DbHelper(_connectionString);
+		[Fact]
+		public void Write50Events_ShouldInsert50EventsToDb()
+		{
+			_dbHelper.ClearTable(_tableName);
 
-        [Fact]
-        public void Write50Events_ShouldInsert50EventsToDb()
-        {
-            _dbHelper.ClearTable(_tableName);
+			var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
 
+			var testObj2 = new TestObjectType2 { DateProp1 = DateTime.Now, NestedProp = testObject };
 
-            var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
+			var columnProps = new Dictionary<string, ColumnWriterBase>
+				{
+					 {"message", new RenderedMessageColumnWriter() },
+					 {"message_template", new MessageTemplateColumnWriter() },
+					 {"level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
+					 {"raise_date", new TimestampColumnWriter() },
+					 {"exception", new ExceptionColumnWriter() },
+					 {"properties", new LogEventSerializedColumnWriter() },
+					 {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) },
+					 {"machine_name", new SinglePropertyColumnWriter("MachineName", format: "l") }
+				};
 
-            var testObj2 = new TestObjectType2 { DateProp1 = DateTime.Now, NestedProp = testObject };
+			var logger =
+				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps)
+					  .Enrich.WithMachineName()
+					  .CreateLogger();
 
-            var columnProps = new Dictionary<string, ColumnWriterBase>
-            {
-                {"message", new RenderedMessageColumnWriter() },
-                {"message_template", new MessageTemplateColumnWriter() },
-                {"level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
-                {"raise_date", new TimestampColumnWriter() },
-                {"exception", new ExceptionColumnWriter() },
-                {"properties", new LogEventSerializedColumnWriter() },
-                {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) },
-                {"machine_name", new SinglePropertyColumnWriter("MachineName", format: "l") }
-            };
+			const int rowsCount = 50;
+			for (int i = 0; i < rowsCount; i++)
+			{
+				logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
+			}
 
-            var logger =
-                new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps)
-                    .Enrich.WithMachineName()
-                    .CreateLogger();
+			logger.Dispose();
 
-            int rowsCount = 50;
-            for (int i = 0; i < rowsCount; i++)
-            {
-                logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
-            }
+			var actualRowsCount = _dbHelper.GetTableRowsCount(_tableName);
 
-            logger.Dispose();
+			Assert.Equal(rowsCount, actualRowsCount);
+		}
 
-            var actualRowsCount = _dbHelper.GetTableRowsCount(_tableName);
+		[Fact]
+		public void WriteEventWithZeroCodeCharInJson_ShouldInsertEventToDb()
+		{
+			_dbHelper.ClearTable(_tableName);
 
-            Assert.Equal(rowsCount, actualRowsCount);
+			var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test\\u0000" };
 
-        }
+			var columnProps = new Dictionary<string, ColumnWriterBase>
+				{
+					 {"message", new RenderedMessageColumnWriter() },
+					 {"message_template", new MessageTemplateColumnWriter() },
+					 {"level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
+					 {"raise_date", new TimestampColumnWriter() },
+					 {"exception", new ExceptionColumnWriter() },
+					 {"properties", new LogEventSerializedColumnWriter() },
+					 {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) }
+				};
 
-        [Fact]
-        public void WriteEventWithZeroCodeCharInJson_ShouldInsertEventToDb()
-        {
-            _dbHelper.ClearTable(_tableName);
+			var logger =
+				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps)
+					  .CreateLogger();
 
-            var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test\\u0000" };
+			logger.Information("Test: {@testObject} testStr: {@testStr:l}", testObject, "stringValue");
 
-            var columnProps = new Dictionary<string, ColumnWriterBase>
-            {
-                {"message", new RenderedMessageColumnWriter() },
-                {"message_template", new MessageTemplateColumnWriter() },
-                {"level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
-                {"raise_date", new TimestampColumnWriter() },
-                {"exception", new ExceptionColumnWriter() },
-                {"properties", new LogEventSerializedColumnWriter() },
-                {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) }
-            };
+			logger.Dispose();
 
-            var logger =
-                new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps)
-                    .CreateLogger();
+			var actualRowsCount = _dbHelper.GetTableRowsCount(_tableName);
 
-            logger.Information("Test: {@testObject} testStr: {@testStr:l}", testObject, "stringValue");
+			Assert.Equal(1, actualRowsCount);
+		}
 
-            logger.Dispose();
+		[Fact]
+		public void QuotedColumnNamesWithInsertStatements_ShouldInsertEventToDb()
+		{
+			_dbHelper.ClearTable(_tableName);
 
-            var actualRowsCount = _dbHelper.GetTableRowsCount(_tableName);
+			var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
 
-            Assert.Equal(1, actualRowsCount);
-        }
+			var columnProps = new Dictionary<string, ColumnWriterBase>
+				{
+					 {"message", new RenderedMessageColumnWriter() },
+					 {"\"message_template\"", new MessageTemplateColumnWriter() },
+					 {"\"level\"", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
+					 {"raise_date", new TimestampColumnWriter() },
+					 {"exception", new ExceptionColumnWriter() },
+					 {"properties", new LogEventSerializedColumnWriter() },
+					 {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) }
+				};
 
-        [Fact]
-        public void QuotedColumnNamesWithInsertStatements_ShouldInsertEventToDb()
-        {
-            _dbHelper.ClearTable(_tableName);
+			var logger =
+				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps, useCopy: false)
+					  .CreateLogger();
 
-            var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
+			logger.Information("Test: {@testObject} testStr: {@testStr:l}", testObject, "stringValue");
 
-            var columnProps = new Dictionary<string, ColumnWriterBase>
-            {
-                {"message", new RenderedMessageColumnWriter() },
-                {"\"message_template\"", new MessageTemplateColumnWriter() },
-                {"\"level\"", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
-                {"raise_date", new TimestampColumnWriter() },
-                {"exception", new ExceptionColumnWriter() },
-                {"properties", new LogEventSerializedColumnWriter() },
-                {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) }
-            };
+			logger.Dispose();
 
-            var logger =
-                new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps, useCopy: false)
-                    .CreateLogger();
+			var actualRowsCount = _dbHelper.GetTableRowsCount(_tableName);
 
-            logger.Information("Test: {@testObject} testStr: {@testStr:l}", testObject, "stringValue");
+			Assert.Equal(1, actualRowsCount);
+		}
 
-            logger.Dispose();
+		[Fact]
+		public void PropertyForSinglePropertyColumnWriterDoesNotExistsWithInsertStatements_ShouldInsertEventToDb()
+		{
+			_dbHelper.ClearTable(_tableName);
 
-            var actualRowsCount = _dbHelper.GetTableRowsCount(_tableName);
+			var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
 
-            Assert.Equal(1, actualRowsCount);
-        }
+			var columnProps = new Dictionary<string, ColumnWriterBase>
+				{
+					 {"message", new RenderedMessageColumnWriter() },
+					 {"message_template", new MessageTemplateColumnWriter() },
+					 {"level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
+					 {"raise_date", new TimestampColumnWriter() },
+					 {"exception", new ExceptionColumnWriter() },
+					 {"properties", new LogEventSerializedColumnWriter() },
+					 {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) },
+					 {"machine_name", new SinglePropertyColumnWriter("MachineName", format: "l") }
+				};
 
-        [Fact]
-        public void PropertyForSinglePropertyColumnWriterDoesNotExistsWithInsertStatements_ShouldInsertEventToDb()
-        {
-            _dbHelper.ClearTable(_tableName);
+			var logger =
+				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps, useCopy: false)
+					  .CreateLogger();
 
-            var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
+			logger.Information("Test: {@testObject} testStr: {@testStr:l}", testObject, "stringValue");
 
-            var columnProps = new Dictionary<string, ColumnWriterBase>
-            {
-                {"message", new RenderedMessageColumnWriter() },
-                {"message_template", new MessageTemplateColumnWriter() },
-                {"level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
-                {"raise_date", new TimestampColumnWriter() },
-                {"exception", new ExceptionColumnWriter() },
-                {"properties", new LogEventSerializedColumnWriter() },
-                {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) },
-                {"machine_name", new SinglePropertyColumnWriter("MachineName", format: "l") }
-            };
+			logger.Dispose();
 
-            var logger =
-                new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps, useCopy: false)
-                    .CreateLogger();
+			var actualRowsCount = _dbHelper.GetTableRowsCount(_tableName);
 
-            logger.Information("Test: {@testObject} testStr: {@testStr:l}", testObject, "stringValue");
+			Assert.Equal(1, actualRowsCount);
+		}
 
-            logger.Dispose();
+		[Fact]
+		public void AutoCreateTableIsTrue_ShouldCreateTable()
+		{
+			const string tableName = "logs_auto_created";
 
-            var actualRowsCount = _dbHelper.GetTableRowsCount(_tableName);
+			_dbHelper.RemoveTable(tableName);
 
-            Assert.Equal(1, actualRowsCount);
-        }
+			var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
 
-        [Fact]
-        public void AutoCreateTableIsTrue_ShouldCreateTable()
-        {
-            var tableName = "logs_auto_created";
+			var testObj2 = new TestObjectType2 { DateProp1 = DateTime.Now, NestedProp = testObject };
 
-            _dbHelper.RemoveTable(tableName);
+			var columnProps = new Dictionary<string, ColumnWriterBase>
+				{
+					 {"message", new RenderedMessageColumnWriter() },
+					 {"message_template", new MessageTemplateColumnWriter() },
+					 {"level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
+					 {"raise_date", new TimestampColumnWriter() },
+					 {"exception", new ExceptionColumnWriter() },
+					 {"properties", new LogEventSerializedColumnWriter() },
+					 {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) },
+					 {"int_prop_test", new SinglePropertyColumnWriter("testNo", PropertyWriteMethod.Raw, NpgsqlDbType.Integer) },
+					 {"machine_name", new SinglePropertyColumnWriter("MachineName", format: "l") }
+				};
 
-            var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
+			var logger =
+				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, tableName, columnProps, needAutoCreateTable: true)
+					  .Enrich.WithMachineName()
+					  .CreateLogger();
 
-            var testObj2 = new TestObjectType2 { DateProp1 = DateTime.Now, NestedProp = testObject };
+			const int rowsCount = 50;
+			for (int i = 0; i < rowsCount; i++)
+			{
+				logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
+			}
 
-            var columnProps = new Dictionary<string, ColumnWriterBase>
-            {
-                {"message", new RenderedMessageColumnWriter() },
-                {"message_template", new MessageTemplateColumnWriter() },
-                {"level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
-                {"raise_date", new TimestampColumnWriter() },
-                {"exception", new ExceptionColumnWriter() },
-                {"properties", new LogEventSerializedColumnWriter() },
-                {"props_test", new PropertiesColumnWriter(NpgsqlDbType.Text) },
-                {"int_prop_test", new SinglePropertyColumnWriter("testNo", PropertyWriteMethod.Raw, NpgsqlDbType.Integer) },
-                {"machine_name", new SinglePropertyColumnWriter("MachineName", format: "l") }
-            };
+			logger.Dispose();
 
-            var logger =
-                new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, tableName, columnProps, needAutoCreateTable: true)
-                    .Enrich.WithMachineName()
-                    .CreateLogger();
+			var actualRowsCount = _dbHelper.GetTableRowsCount(tableName);
 
-            int rowsCount = 50;
-            for (int i = 0; i < rowsCount; i++)
-            {
-                logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
-            }
+			Assert.Equal(rowsCount, actualRowsCount);
+		}
 
-            logger.Dispose();
+		[Fact]
+		public void ColumnsAndTableWithDifferentCaseName_ShouldCreateTableAndIsertEvents()
+		{
+			const string tableName = "LogsAutoCreated";
+			var quotedTableName = $"\"{tableName}\"";
+			_dbHelper.RemoveTable(quotedTableName);
 
-            var actualRowsCount = _dbHelper.GetTableRowsCount(tableName);
+			var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
 
-            Assert.Equal(rowsCount, actualRowsCount);
-        }
+			var testObj2 = new TestObjectType2 { DateProp1 = DateTime.Now, NestedProp = testObject };
 
+			var columnProps = new Dictionary<string, ColumnWriterBase>
+				{
+					 {"Message", new RenderedMessageColumnWriter() },
+					 {"MessageTemplate", new MessageTemplateColumnWriter() },
+					 {"Level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
+					 {"RaiseDate", new TimestampColumnWriter() },
+					 {"\"Exception\"", new ExceptionColumnWriter() },
+					 {"Properties", new LogEventSerializedColumnWriter() },
+					 {"PropsTest", new PropertiesColumnWriter(NpgsqlDbType.Text) },
+					 {"IntPropTest", new SinglePropertyColumnWriter("testNo", PropertyWriteMethod.Raw, NpgsqlDbType.Integer) },
+					 {"MachineName", new SinglePropertyColumnWriter("MachineName", format: "l") }
+				};
 
-        [Fact]
-        public void ColumnsAndTableWithDifferentCaseName_ShouldCreateTableAndIsertEvents()
-        {
-            var tableName = "LogsAutoCreated";
-            var quotedTableName = $"\"{tableName}\"";
-            _dbHelper.RemoveTable(quotedTableName);
+			var logger =
+				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, tableName, columnProps, needAutoCreateTable: true, respectCase: true)
+					  .Enrich.WithMachineName()
+					  .CreateLogger();
 
-            var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
+			const int rowsCount = 50;
+			for (int i = 0; i < rowsCount; i++)
+			{
+				logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
+			}
 
-            var testObj2 = new TestObjectType2 { DateProp1 = DateTime.Now, NestedProp = testObject };
+			logger.Dispose();
 
-            var columnProps = new Dictionary<string, ColumnWriterBase>
-            {
-                {"Message", new RenderedMessageColumnWriter() },
-                {"MessageTemplate", new MessageTemplateColumnWriter() },
-                {"Level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
-                {"RaiseDate", new TimestampColumnWriter() },
-                {"\"Exception\"", new ExceptionColumnWriter() },
-                {"Properties", new LogEventSerializedColumnWriter() },
-                {"PropsTest", new PropertiesColumnWriter(NpgsqlDbType.Text) },
-                {"IntPropTest", new SinglePropertyColumnWriter("testNo", PropertyWriteMethod.Raw, NpgsqlDbType.Integer) },
-                {"MachineName", new SinglePropertyColumnWriter("MachineName", format: "l") }
-            };
+			var actualRowsCount = _dbHelper.GetTableRowsCount(quotedTableName);
 
-            var logger =
-                new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, tableName, columnProps, needAutoCreateTable: true, respectCase: true)
-                    .Enrich.WithMachineName()
-                    .CreateLogger();
-
-            int rowsCount = 50;
-            for (int i = 0; i < rowsCount; i++)
-            {
-                logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
-            }
-
-            logger.Dispose();
-
-            var actualRowsCount = _dbHelper.GetTableRowsCount(quotedTableName);
-
-            Assert.Equal(rowsCount, actualRowsCount);
-        }
-    }
+			Assert.Equal(rowsCount, actualRowsCount);
+		}
+	}
 }

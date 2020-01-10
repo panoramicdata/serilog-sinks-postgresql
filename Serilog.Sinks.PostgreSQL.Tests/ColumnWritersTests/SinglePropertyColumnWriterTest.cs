@@ -1,65 +1,65 @@
-﻿using System;
-using System.Linq;
-using Serilog.Events;
+﻿using Serilog.Events;
 using Serilog.Parsing;
+using System;
+using System.Linq;
 using Xunit;
 
 namespace Serilog.Sinks.PostgreSQL.Tests
 {
-    public class SinglePropertyColumnWriterTest
-    {
-        [Fact]
-        public void WithToStringSeleted_ShouldRespectFormatPassed()
-        {
-            string propertyName = "TestProperty";
+	public class SinglePropertyColumnWriterTest
+	{
+		[Fact]
+		public void WithToStringSeleted_ShouldRespectFormatPassed()
+		{
+			const string propertyName = "TestProperty";
 
-            string propertyValue = "TestValue";
+			const string propertyValue = "TestValue";
 
-            var property = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
+			var property = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
 
-            var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.ToString, format: "l");
+			var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.ToString, format: "l");
 
-            var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), new []{ property });
+			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), new[] { property });
 
-            var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(testEvent);
 
-            Assert.Equal(propertyValue, result);
-        }
+			Assert.Equal(propertyValue, result);
+		}
 
-        [Fact]
-        public void PropertyIsNotPeresent_ShouldReturnDbNullValue()
-        {
-            string propertyName = "TestProperty";
+		[Fact]
+		public void PropertyIsNotPeresent_ShouldReturnDbNullValue()
+		{
+			const string propertyName = "TestProperty";
 
-            string propertyValue = "TestValue";
+			const string propertyValue = "TestValue";
 
-            var property = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
+			_ = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
 
-            var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.ToString, format: "l");
+			var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.ToString, format: "l");
 
-            var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
+			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
 
-            var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(testEvent);
 
-            Assert.Equal(DBNull.Value, result);
-        }
+			Assert.Equal(DBNull.Value, result);
+		}
 
-        [Fact]
-        public void RawSelectedForScalarProperty_ShouldReturnPropertyValue()
-        {
-            string propertyName = "TestProperty";
+		[Fact]
+		public void RawSelectedForScalarProperty_ShouldReturnPropertyValue()
+		{
+			const string propertyName = "TestProperty";
 
-            int propertyValue = 42;
+			const int propertyValue = 42;
 
-            var property = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
+			var property = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
 
-            var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.Raw);
+			var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.Raw);
 
-            var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), new[] { property });
+			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), new[] { property });
 
-            var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(testEvent);
 
-            Assert.Equal(propertyValue, result);
-        }
-    }
+			Assert.Equal(propertyValue, result);
+		}
+	}
 }
