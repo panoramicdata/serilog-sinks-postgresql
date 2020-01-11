@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>Serilog.Sinks.PostgreSql.PanoramicData</PackageId>
+		<Company>Panoramic Data Limited</Company>
+		<Authors>David Bond</Authors>
+		<Copyright>Panoramic Data Limited 2020, original contributors</Copyright>
+		<Product>Serilog.Sinks.PostgreSql.PanoramicData</Product>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/panoramicdata/serilog-sinks-postgresql</PackageProjectUrl>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageIconUrl />
+		<RepositoryUrl>git@github.com:panoramicdata/serilog-sinks-postgresql.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>Serilog Sink PostgreSQL</PackageTags>
+		<PackageReleaseNotes>Initial update, forked from b00ted/serilog-sinks-postgresql</PackageReleaseNotes>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\icon.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.0.48">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
+		<PackageReference Include="Serilog" Version="2.9.0" />
+		<PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="2.2.0" />
+	</ItemGroup>
+
+</Project>
