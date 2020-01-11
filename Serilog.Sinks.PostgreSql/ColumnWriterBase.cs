@@ -2,7 +2,7 @@
 using Serilog.Events;
 using System;
 
-namespace Serilog.Sinks.PostgreSQL
+namespace Serilog.Sinks.PostgreSql
 {
 	public abstract class ColumnWriterBase
 	{

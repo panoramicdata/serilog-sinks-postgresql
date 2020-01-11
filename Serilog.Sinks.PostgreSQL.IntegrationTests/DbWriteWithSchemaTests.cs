@@ -1,10 +1,10 @@
 ﻿using NpgsqlTypes;
-using Serilog.Sinks.PostgreSQL.IntegrationTests.Objects;
+using Serilog.Sinks.PostgreSql.IntegrationTests.Objects;
 using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Serilog.Sinks.PostgreSQL.IntegrationTests
+namespace Serilog.Sinks.PostgreSql.IntegrationTests
 {
 	public class DbWriteWithSchemaTests
 	{

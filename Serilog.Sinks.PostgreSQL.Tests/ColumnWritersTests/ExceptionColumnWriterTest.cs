@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using Xunit;
 
-namespace Serilog.Sinks.PostgreSQL.Tests
+namespace Serilog.Sinks.PostgreSql.Tests
 {
 	public class ExceptionColumnWriterTest
 	{

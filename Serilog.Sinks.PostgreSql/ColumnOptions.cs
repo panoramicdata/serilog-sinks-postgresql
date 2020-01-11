@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Serilog.Sinks.PostgreSQL
+namespace Serilog.Sinks.PostgreSql
 {
 	public static class ColumnOptions
 	{

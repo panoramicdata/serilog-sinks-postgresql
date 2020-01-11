@@ -4,7 +4,7 @@ using Serilog.Formatting.Json;
 using System;
 using System.Text;
 
-namespace Serilog.Sinks.PostgreSQL
+namespace Serilog.Sinks.PostgreSql
 {
 	/// <summary>
 	/// Write single event property
