@@ -1,11 +1,12 @@
 ﻿using Npgsql;
 using Serilog.Events;
 using Serilog.Sinks.PeriodicBatching;
+using Serilog.Sinks.PostgreSql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Serilog.Sinks.PostgreSQL
+namespace Serilog.Sinks.PostgreSql
 {
 	public class PostgreSQLSink : PeriodicBatchingSink
 	{

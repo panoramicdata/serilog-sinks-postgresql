@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Serilog.Sinks.PostgreSQL.IntegrationTests.Objects
+namespace Serilog.Sinks.PostgreSql.IntegrationTests.Objects
 {
 	public class TestObjectType2
 	{

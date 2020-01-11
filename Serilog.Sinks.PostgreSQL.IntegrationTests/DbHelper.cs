@@ -1,6 +1,6 @@
 ﻿using Npgsql;
 
-namespace Serilog.Sinks.PostgreSQL.IntegrationTests
+namespace Serilog.Sinks.PostgreSql.IntegrationTests
 {
 	public class DbHelper
 	{

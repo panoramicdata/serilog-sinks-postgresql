@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Serilog.Sinks.PostgreSQL
+namespace Serilog.Sinks.PostgreSql
 {
 	public static class TableCreator
 	{

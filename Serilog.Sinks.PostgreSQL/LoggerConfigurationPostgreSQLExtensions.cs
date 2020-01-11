@@ -1,7 +1,7 @@
 ﻿using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.PostgreSQL;
+using Serilog.Sinks.PostgreSql;
 using System;
 using System.Collections.Generic;
 

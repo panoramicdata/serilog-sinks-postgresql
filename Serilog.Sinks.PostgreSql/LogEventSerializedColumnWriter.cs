@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Serilog.Sinks.PostgreSQL
+namespace Serilog.Sinks.PostgreSql
 {
 	/// <summary>
 	/// Writes log event as json

@@ -1,8 +1,8 @@
-# Serilog.Sinks.Postgresql
+# Serilog.Sinks.PostgreSql
 A [Serilog](https://github.com/serilog/serilog) sink that writes to PostgreSQL
 
-**Package** - [Serilog.Sinks.PostgreSQL](https://www.nuget.org/packages/Serilog.Sinks.PostgreSQL/)
-| **Platforms** - .NET 4.5, .NET Standard 2.0
+**Package** - [Serilog.Sinks.PostgreSql](https://www.nuget.org/packages/Serilog.Sinks.PostgreSql.PanoramicData/)
+| **Platforms** - .NET Standard 2.0
 
 #### Code
 

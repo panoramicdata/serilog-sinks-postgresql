@@ -1,4 +1,4 @@
-﻿namespace Serilog.Sinks.PostgreSQL
+﻿namespace Serilog.Sinks.PostgreSql
 {
 	public enum PropertyWriteMethod
 	{
