@@ -1,36 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <AssemblyName>Serilog.Sinks.PostgreSQL</AssemblyName>
-    <RootNamespace>Serilog</RootNamespace>
-    <Authors>Evgenii Butorin</Authors>
-    <Company />
-    <Description>Serilog sink for writing to PostgreSQL table</Description>
-    <PackageProjectUrl>https://github.com/b00ted/serilog-sinks-postgresql</PackageProjectUrl>
-    <RepositoryUrl></RepositoryUrl>
-    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
-    <Version>2.1.0</Version>
-    <PackageTags>serilog postgresql</PackageTags>
-    <PackageReleaseNotes>Added mixed case table and column names support</PackageReleaseNotes>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  <LangVersion>latest</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>Serilog.Sinks.PostgreSql.PanoramicData</PackageId>
+		<Company>Panoramic Data Limited</Company>
+		<Authors>David Bond</Authors>
+		<Copyright>Panoramic Data Limited 2020, original contributors</Copyright>
+		<Product>Serilog.Sinks.PostgreSql.PanoramicData</Product>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/panoramicdata/serilog-sinks-postgresql</PackageProjectUrl>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageIconUrl />
+		<RepositoryUrl>git@github.com:panoramicdata/serilog-sinks-postgresql.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>Serilog Sink PostgreSQL</PackageTags>
+		<PackageReleaseNotes>Initial update, forked from b00ted/serilog-sinks-postgresql</PackageReleaseNotes>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard2.0\Serilog.Sinks.PostgreSQL.xml</DocumentationFile>
-  </PropertyGroup>
+	<ItemGroup>
+		<None Include="..\icon.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU'">
-    <DocumentationFile>bin\Release\net45\Serilog.Sinks.PostgreSQL.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Npgsql" Version="4.1.2" />
-    <PackageReference Include="Serilog" Version="2.9.0" />
-    <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="2.2.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
+		<PackageReference Include="Serilog" Version="2.9.0" />
+		<PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="2.2.0" />
+	</ItemGroup>
 
 </Project>

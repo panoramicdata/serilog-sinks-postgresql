@@ -17,7 +17,7 @@ namespace Serilog.Sinks.PostgreSQL
 		private readonly bool _useCopy;
 
 		public const int DefaultBatchSizeLimit = 30;
-		public const int DefaultQueueLimit = Int32.MaxValue;
+		public const int DefaultQueueLimit = int.MaxValue;
 
 		private bool _isTableCreated;
 
@@ -88,7 +88,7 @@ namespace Serilog.Sinks.PostgreSQL
 
 		private static string QuoteIdentifier(string identifier)
 		{
-			if (String.IsNullOrEmpty(identifier) || identifier.StartsWith("\""))
+			if (string.IsNullOrEmpty(identifier) || identifier.StartsWith("\""))
 			{
 				return identifier;
 			}
@@ -110,8 +110,8 @@ namespace Serilog.Sinks.PostgreSQL
 
 		private string GetFullTableName(string tableName, string schemaName)
 		{
-			var schemaPrefix = String.Empty;
-			if (!String.IsNullOrEmpty(schemaName))
+			var schemaPrefix = string.Empty;
+			if (!string.IsNullOrEmpty(schemaName))
 			{
 				schemaPrefix = schemaName + ".";
 			}
@@ -160,9 +160,7 @@ namespace Serilog.Sinks.PostgreSQL
 		}
 
 		private static string ClearColumnNameForParameterName(string columnName)
-		{
-			return columnName?.Replace("\"", "");
-		}
+			=> columnName?.Replace("\"", "");
 
 		private void ProcessEventsByCopyCommand(IEnumerable<LogEvent> events, NpgsqlConnection connection)
 		{
@@ -173,16 +171,16 @@ namespace Serilog.Sinks.PostgreSQL
 
 		private string GetCopyCommand()
 		{
-			var columns = String.Join(", ", _columnOptions.Keys);
+			var columns = string.Join(", ", _columnOptions.Keys);
 
 			return $"COPY {_fullTableName}({columns}) FROM STDIN BINARY;";
 		}
 
 		private string GetInsertQuery()
 		{
-			var columns = String.Join(", ", _columnOptions.Keys);
+			var columns = string.Join(", ", _columnOptions.Keys);
 
-			var parameters = String.Join(", ", _columnOptions.Keys.Select(cn => ":" + ClearColumnNameForParameterName(cn)));
+			var parameters = string.Join(", ", _columnOptions.Keys.Select(cn => ":" + ClearColumnNameForParameterName(cn)));
 
 			return $@"INSERT INTO {_fullTableName} ({columns})
                                         VALUES ({parameters})";

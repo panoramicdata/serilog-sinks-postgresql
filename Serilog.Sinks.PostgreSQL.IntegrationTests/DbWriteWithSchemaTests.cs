@@ -8,7 +8,7 @@ namespace Serilog.Sinks.PostgreSQL.IntegrationTests
 {
 	public class DbWriteWithSchemaTests
 	{
-		private const string _connectionString = "User ID=serilog;Password=serilog;Host=localhost;Port=5432;Database=serilog_logs";
+		private const string _connectionString = "Host=localhost;Port=5432;Database=serilog_logs;User ID=serilog;Password=serilog";
 
 		private const string _tableName = "logs_with_schema";
 		private const string _schemaName = "logs";
@@ -20,7 +20,7 @@ namespace Serilog.Sinks.PostgreSQL.IntegrationTests
 		[Fact]
 		public void Write50Events_ShouldInsert50EventsToDb()
 		{
-			_dbHelper.ClearTable(_tableFullName);
+			_dbHelper.RemoveTable(_tableFullName);
 
 			var testObject = new TestObjectType1 { IntProp = 42, StringProp = "Test" };
 
@@ -38,18 +38,21 @@ namespace Serilog.Sinks.PostgreSQL.IntegrationTests
 					 {"machine_name", new SinglePropertyColumnWriter("MachineName") }
 				};
 
-			var logger =
-				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, _tableName, columnProps, schemaName: _schemaName)
+			using (var logger =
+				 new LoggerConfiguration().WriteTo.PostgreSQL(
+					  _connectionString,
+					  _tableName,
+					  columnProps,
+					  schemaName: _schemaName,
+					  needAutoCreateTable: true)
 					  .Enrich.WithMachineName()
-					  .CreateLogger();
-
-			for (int i = 0; i < 50; i++)
+					  .CreateLogger())
 			{
-				logger.Information("Test{testNo}: {@testObject} test2: {@testObj2}", i, testObject, testObj2);
+				for (var i = 0; i < 50; i++)
+				{
+					logger.Information("Test{testNo}: {@testObject} test2: {@testObj2}", i, testObject, testObj2);
+				}
 			}
-
-			logger.Dispose();
-
 			var rowsCount = _dbHelper.GetTableRowsCount(_tableFullName);
 
 			Assert.Equal(50, rowsCount);
@@ -81,12 +84,17 @@ namespace Serilog.Sinks.PostgreSQL.IntegrationTests
 				};
 
 			var logger =
-				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, tableName, columnProps, schemaName: _schemaName, needAutoCreateTable: true)
+				 new LoggerConfiguration().WriteTo.PostgreSQL(
+					  _connectionString,
+					  tableName,
+					  columnProps,
+					  schemaName: _schemaName,
+					  needAutoCreateTable: true)
 					  .Enrich.WithMachineName()
 					  .CreateLogger();
 
 			const int rowsCount = 50;
-			for (int i = 0; i < rowsCount; i++)
+			for (var i = 0; i < rowsCount; i++)
 			{
 				logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
 			}
@@ -124,18 +132,24 @@ namespace Serilog.Sinks.PostgreSQL.IntegrationTests
 					 {"MachineName", new SinglePropertyColumnWriter("MachineName", format: "l") }
 				};
 
-			var logger =
-				 new LoggerConfiguration().WriteTo.PostgreSQL(_connectionString, tableName, columnProps, schemaName: schemaName, needAutoCreateTable: true, respectCase: true)
-					  .Enrich.WithMachineName()
-					  .CreateLogger();
-
 			const int rowsCount = 50;
-			for (int i = 0; i < rowsCount; i++)
-			{
-				logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
-			}
 
-			logger.Dispose();
+			using (var logger =
+				 new LoggerConfiguration().WriteTo.PostgreSQL(
+					  _connectionString,
+					  tableName,
+					  columnProps,
+					  schemaName: schemaName,
+					  needAutoCreateTable: true,
+					  respectCase: true)
+					  .Enrich.WithMachineName()
+					  .CreateLogger())
+			{
+				for (var i = 0; i < rowsCount; i++)
+				{
+					logger.Information("Test{testNo}: {@testObject} test2: {@testObj2} testStr: {@testStr:l}", i, testObject, testObj2, "stringValue");
+				}
+			}
 
 			var actualRowsCount = _dbHelper.GetTableRowsCount(fullTableName);
 
