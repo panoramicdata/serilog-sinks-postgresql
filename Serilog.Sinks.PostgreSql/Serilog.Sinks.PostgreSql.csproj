@@ -3,11 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageId>Serilog.Sinks.PostgreSql</PackageId>
+		<PackageId>Serilog.Sinks.PostgreSql.PanoramicData</PackageId>
 		<Company>Panoramic Data Limited</Company>
 		<Authors>David Bond</Authors>
 		<Copyright>Panoramic Data Limited 2020, original contributors</Copyright>
-		<Product>Serilog.Sinks.PostgreSql</Product>
+		<Product>Serilog.Sinks.PostgreSql.PanoramicData</Product>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/panoramicdata/serilog-sinks-postgresql</PackageProjectUrl>
 		<PackageIcon>icon.png</PackageIcon>
