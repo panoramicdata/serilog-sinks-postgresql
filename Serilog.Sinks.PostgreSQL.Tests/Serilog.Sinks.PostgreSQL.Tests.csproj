@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Serilog.Sinks.PostgreSql\Serilog.Sinks.PostgreSql.csproj" />
+		<ProjectReference Include="..\Serilog.Sinks.PostgreSQL\Serilog.Sinks.PostgreSQL.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
