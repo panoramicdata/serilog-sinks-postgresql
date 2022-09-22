@@ -107,10 +107,10 @@ namespace Serilog.Sinks.PostgreSql.IntegrationTests
 		}
 
 		[Fact]
-		public void ColumnsAndTableWithDifferentCaseName_ShouldCreateTableAndIsertEvents()
+		public void ColumnsAndTableWithDifferentCaseName_ShouldCreateTableAndInsertEvents()
 		{
 			const string tableName = "LogsAutoCreatedWithSchema";
-			const string schemaName = "Logs";
+			const string schemaName = "logs";
 
 			var fullTableName = $"\"{schemaName}\".\"{tableName}\"";
 			_dbHelper.RemoveTable(fullTableName);
