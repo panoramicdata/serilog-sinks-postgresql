@@ -12,11 +12,14 @@ namespace Serilog.Sinks.PostgreSql
 	/// </summary>
 	public class LogEventSerializedColumnWriter : ColumnWriterBase
 	{
-		public LogEventSerializedColumnWriter(NpgsqlDbType dbType = NpgsqlDbType.Jsonb) : base(dbType)
-		{
-		}
+		public LogEventSerializedColumnWriter() : this(NpgsqlDbType.Jsonb) { }
 
-		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider = null)
+		public LogEventSerializedColumnWriter(NpgsqlDbType dbType) : base(dbType) {}
+
+		public object GetValue(LogEvent logEvent)
+			=> GetValue(logEvent, null);
+
+		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider)
 			=> LogEventToJson(logEvent, formatProvider);
 
 		private object LogEventToJson(LogEvent logEvent, IFormatProvider formatProvider)

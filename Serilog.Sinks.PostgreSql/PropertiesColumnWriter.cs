@@ -11,11 +11,16 @@ namespace Serilog.Sinks.PostgreSql
 	/// </summary>
 	public class PropertiesColumnWriter : ColumnWriterBase
 	{
-		public PropertiesColumnWriter(NpgsqlDbType dbType = NpgsqlDbType.Jsonb) : base(dbType)
+
+		public PropertiesColumnWriter() : this(NpgsqlDbType.Jsonb) { }
+		public PropertiesColumnWriter(NpgsqlDbType dbType) : base(dbType)
 		{
 		}
 
-		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider = null)
+		public object GetValue(LogEvent logEvent)
+			=> GetValue(logEvent, null);
+
+		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider)
 			=> PropertiesToJson(logEvent);
 
 		private object PropertiesToJson(LogEvent logEvent)

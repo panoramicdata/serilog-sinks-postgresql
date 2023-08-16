@@ -16,6 +16,8 @@ namespace Serilog.Sinks.PostgreSql
 			_renderAsText = renderAsText;
 		}
 
+		public object GetValue(LogEvent logEvent) => GetValue(logEvent, null);
+
 		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider = null)
 		{
 			if (_renderAsText)

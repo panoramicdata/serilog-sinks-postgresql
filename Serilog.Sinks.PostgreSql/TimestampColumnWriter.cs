@@ -9,11 +9,19 @@ namespace Serilog.Sinks.PostgreSql
 	/// </summary>
 	public class TimestampColumnWriter : ColumnWriterBase
 	{
-		public TimestampColumnWriter(NpgsqlDbType dbType = NpgsqlDbType.Timestamp) : base(dbType)
+
+		public TimestampColumnWriter() : this(NpgsqlDbType.Timestamp)
 		{
 		}
 
-		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider = null)
+		public TimestampColumnWriter(NpgsqlDbType dbType) : base(dbType)
+		{
+		}
+
+		public object GetValue(LogEvent logEvent)
+			=> GetValue(logEvent, null);
+
+		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider)
 		{
 			if (DbType == NpgsqlDbType.Timestamp)
 			{
