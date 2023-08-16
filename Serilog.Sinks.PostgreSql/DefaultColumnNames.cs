@@ -2,16 +2,16 @@
 {
 	public static class DefaultColumnNames
 	{
-		public const string RenderedMesssage = "message";
+		public static string RenderedMesssage = "message";
 
-		public const string MessageTemplate = "message_template";
+		public static string MessageTemplate = "message_template";
 
-		public const string Level = "level";
+		public static string Level = "level";
 
-		public const string Timestamp = "timestamp";
+		public static string Timestamp = "timestamp";
 
-		public const string Exception = "exception";
+		public static string Exception = "exception";
 
-		public const string LogEventSerialized = "log_event";
+		public static string LogEventSerialized = "log_event";
 	}
 }
