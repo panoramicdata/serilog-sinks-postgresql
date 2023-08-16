@@ -11,7 +11,7 @@ namespace Serilog.Sinks.PostgreSql
 	{
 		public ExceptionColumnWriter() : this(NpgsqlDbType.Text) { }
 
-		public ExceptionColumnWriter(NpgsqlDbType dbType = NpgsqlDbType.Text) : base(dbType)
+		public ExceptionColumnWriter(NpgsqlDbType dbType) : base(dbType)
 		{
 		}
 
