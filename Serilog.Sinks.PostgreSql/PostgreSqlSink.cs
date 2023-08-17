@@ -184,7 +184,7 @@ namespace Serilog.Sinks.PostgreSql
 			var parameters = string.Join(", ", _columnOptions.Keys.Select(cn => ":" + ClearColumnNameForParameterName(cn)));
 
 			return $@"INSERT INTO {_fullTableName} ({columns})
-                                        VALUES ({parameters})";
+										VALUES ({parameters})";
 		}
 
 		private void WriteToStream(NpgsqlBinaryImporter writer, IEnumerable<LogEvent> entities)

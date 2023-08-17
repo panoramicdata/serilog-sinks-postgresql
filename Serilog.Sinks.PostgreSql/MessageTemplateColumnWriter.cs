@@ -9,11 +9,16 @@ namespace Serilog.Sinks.PostgreSql
 	/// </summary>
 	public class MessageTemplateColumnWriter : ColumnWriterBase
 	{
-		public MessageTemplateColumnWriter(NpgsqlDbType dbType = NpgsqlDbType.Text) : base(dbType)
+		public MessageTemplateColumnWriter() : this(NpgsqlDbType.Text) { }
+
+		public MessageTemplateColumnWriter(NpgsqlDbType dbType) : base(dbType)
 		{
 		}
 
-		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider = null)
+		public object GetValue(LogEvent logEvent)
+			=> GetValue(logEvent, null);
+
+		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider)
 			=> logEvent.MessageTemplate.Text;
 	}
 }

@@ -1,4 +1,5 @@
-﻿using NpgsqlTypes;
+﻿
+using NpgsqlTypes;
 using Serilog.Events;
 using System;
 
@@ -9,11 +10,16 @@ namespace Serilog.Sinks.PostgreSql
 	/// </summary>
 	public class RenderedMessageColumnWriter : ColumnWriterBase
 	{
-		public RenderedMessageColumnWriter(NpgsqlDbType dbType = NpgsqlDbType.Text) : base(dbType)
+		public RenderedMessageColumnWriter() : this(NpgsqlDbType.Text) { }
+
+		public RenderedMessageColumnWriter(NpgsqlDbType dbType) : base(dbType)
 		{
 		}
 
-		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider = null)
+		public object GetValue(LogEvent logEvent)
+			=> GetValue(logEvent, null);
+
+		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider)
 			=> logEvent.RenderMessage(formatProvider);
 	}
 }
