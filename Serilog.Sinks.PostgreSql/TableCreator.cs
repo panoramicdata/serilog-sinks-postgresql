@@ -9,9 +9,9 @@ namespace Serilog.Sinks.PostgreSql
 {
 	public static class TableCreator
 	{
-		public static int DefaultCharColumnsLength = 50;
-		public static int DefaultVarcharColumnsLength = 50;
-		public static int DefaultBitColumnsLength = 8;
+		public static int DefaultCharColumnsLength { get; set; } = 50;
+		public static int DefaultVarcharColumnsLength { get; set; } = 50;
+		public static int DefaultBitColumnsLength { get; set; } = 8;
 
 		public static void CreateTable(NpgsqlConnection connection, string tableName, IDictionary<string, ColumnWriterBase> columnsInfo)
 		{
