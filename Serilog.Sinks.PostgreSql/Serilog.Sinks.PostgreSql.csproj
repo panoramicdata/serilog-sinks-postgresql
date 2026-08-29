@@ -17,6 +17,7 @@
     <PackageTags>Serilog Sink PostgreSQL</PackageTags>
     <PackageReleaseNotes>Initial update, forked from b00ted/serilog-sinks-postgresql</PackageReleaseNotes>
     <LangVersion>latest</LangVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\icon.png">

@@ -3,5 +3,6 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Copyright>Copyright © Panoramic Data Limited</Copyright>
+    <NuGetAuditMode>All</NuGetAuditMode>
   </PropertyGroup>
 </Project>
