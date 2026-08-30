@@ -1,3 +1,7 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+[![Codacy Badge](https://app.codacy.com/project/badge/grade/serilog-sinks-postgresql)](https://app.codacy.com/gh/panoramicdata/serilog-sinks-postgresql/dashboard)
+
 # Serilog.Sinks.PostgreSql
 A [Serilog](https://github.com/serilog/serilog) sink that writes to PostgreSQL
 
