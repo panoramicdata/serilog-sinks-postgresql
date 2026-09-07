@@ -14,7 +14,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
+  <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" /></ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Serilog.Sinks.PostgreSql\Serilog.Sinks.PostgreSql.csproj" />
   </ItemGroup>
