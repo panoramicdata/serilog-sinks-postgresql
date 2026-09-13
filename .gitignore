@@ -165,3 +165,4 @@ WixInstallerApi*.wxs
 
 /.vs
 nuget-key.txt
+.vs/

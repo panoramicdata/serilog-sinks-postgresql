@@ -1,45 +1,31 @@
-﻿using Serilog.Events;
-using Serilog.Parsing;
+using Serilog.Sinks.PostgreSql.Tests.Support;
 using System;
-using System.Linq;
 using Xunit;
 
 namespace Serilog.Sinks.PostgreSql.Tests
 {
 	public class SinglePropertyColumnWriterTest
 	{
-		[Fact]
-		public void WithToStringSeleted_ShouldRespectFormatPassed()
-		{
-			const string propertyName = "TestProperty";
+		private const string PropertyName = "TestProperty";
 
+		[Fact]
+		public void WithToStringSelected_ShouldRespectFormatPassed()
+		{
 			const string propertyValue = "TestValue";
 
-			var property = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
+			var writer = new SinglePropertyColumnWriter(PropertyName, PropertyWriteMethod.ToString, format: "l");
 
-			var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.ToString, format: "l");
-
-			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), new[] { property });
-
-			var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(TestLogEvent.WithProperty(PropertyName, propertyValue));
 
 			Assert.Equal(propertyValue, result);
 		}
 
 		[Fact]
-		public void PropertyIsNotPeresent_ShouldReturnDbNullValue()
+		public void PropertyIsNotPresent_ShouldReturnDbNullValue()
 		{
-			const string propertyName = "TestProperty";
+			var writer = new SinglePropertyColumnWriter(PropertyName, PropertyWriteMethod.ToString, format: "l");
 
-			const string propertyValue = "TestValue";
-
-			_ = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
-
-			var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.ToString, format: "l");
-
-			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
-
-			var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(TestLogEvent.Create());
 
 			Assert.Equal(DBNull.Value, result);
 		}
@@ -47,19 +33,23 @@ namespace Serilog.Sinks.PostgreSql.Tests
 		[Fact]
 		public void RawSelectedForScalarProperty_ShouldReturnPropertyValue()
 		{
-			const string propertyName = "TestProperty";
-
 			const int propertyValue = 42;
 
-			var property = new LogEventProperty(propertyName, new ScalarValue(propertyValue));
+			var writer = new SinglePropertyColumnWriter(PropertyName, PropertyWriteMethod.Raw);
 
-			var writer = new SinglePropertyColumnWriter(propertyName, PropertyWriteMethod.Raw);
-
-			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), new[] { property });
-
-			var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(TestLogEvent.WithProperty(PropertyName, propertyValue));
 
 			Assert.Equal(propertyValue, result);
+		}
+
+		[Fact]
+		public void JsonSelected_ShouldReturnJsonRepresentation()
+		{
+			var writer = new SinglePropertyColumnWriter(PropertyName, PropertyWriteMethod.Json);
+
+			var result = writer.GetValue(TestLogEvent.WithProperty(PropertyName, "TestValue"));
+
+			Assert.Equal("\"TestValue\"", result);
 		}
 	}
 }

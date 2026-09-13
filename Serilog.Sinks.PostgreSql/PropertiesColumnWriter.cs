@@ -1,7 +1,8 @@
-﻿using NpgsqlTypes;
+using NpgsqlTypes;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 using System;
+using System.IO;
 using System.Text;
 
 namespace Serilog.Sinks.PostgreSql
@@ -11,19 +12,24 @@ namespace Serilog.Sinks.PostgreSql
 	/// </summary>
 	public class PropertiesColumnWriter : ColumnWriterBase
 	{
-
+		/// <summary>
+		/// Initialises a new instance writing to a <c>jsonb</c> column.
+		/// </summary>
 		public PropertiesColumnWriter() : this(NpgsqlDbType.Jsonb) { }
+
+		/// <summary>
+		/// Initialises a new instance writing to a column of the given type.
+		/// </summary>
+		/// <param name="dbType">The PostgreSQL type of the column being written.</param>
 		public PropertiesColumnWriter(NpgsqlDbType dbType) : base(dbType)
 		{
 		}
 
-		public object GetValue(LogEvent logEvent)
-			=> GetValue(logEvent, null);
-
-		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider)
+		/// <inheritdoc />
+		public override object GetValue(LogEvent logEvent, IFormatProvider? formatProvider)
 			=> PropertiesToJson(logEvent);
 
-		private object PropertiesToJson(LogEvent logEvent)
+		private static object PropertiesToJson(LogEvent logEvent)
 		{
 			if (logEvent.Properties.Count == 0)
 			{
@@ -34,13 +40,13 @@ namespace Serilog.Sinks.PostgreSql
 
 			var sb = new StringBuilder();
 
-			sb.Append("{");
+			sb.Append('{');
 
-			using (var writer = new System.IO.StringWriter(sb))
+			using (var writer = new StringWriter(sb))
 			{
 				foreach (var logEventProperty in logEvent.Properties)
 				{
-					sb.Append('\"').Append(logEventProperty.Key).Append("\":");
+					sb.Append('"').Append(logEventProperty.Key).Append("\":");
 
 					valuesFormatter.Format(logEventProperty.Value, writer);
 
@@ -49,7 +55,7 @@ namespace Serilog.Sinks.PostgreSql
 			}
 
 			sb.Remove(sb.Length - 2, 2);
-			sb.Append("}");
+			sb.Append('}');
 
 			return sb.ToString();
 		}

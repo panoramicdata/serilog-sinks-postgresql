@@ -1,23 +1,53 @@
-﻿using Npgsql;
+using Npgsql;
 using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Serilog.Sinks.PostgreSql
 {
+	/// <summary>
+	/// Creates the log table when the sink is configured to create it.
+	/// </summary>
 	public static class TableCreator
 	{
+		/// <summary>
+		/// The length given to auto-created <c>character</c> columns.
+		/// </summary>
 		public static int DefaultCharColumnsLength { get; set; } = 50;
+
+		/// <summary>
+		/// The length given to auto-created <c>character varying</c> columns.
+		/// </summary>
 		public static int DefaultVarcharColumnsLength { get; set; } = 50;
+
+		/// <summary>
+		/// The length given to auto-created <c>bit</c> columns.
+		/// </summary>
 		public static int DefaultBitColumnsLength { get; set; } = 8;
 
-		public static void CreateTable(NpgsqlConnection connection, string tableName, IDictionary<string, ColumnWriterBase> columnsInfo)
+		/// <summary>
+		/// Creates the table if it does not already exist.
+		/// </summary>
+		/// <param name="connection">An open connection to the database.</param>
+		/// <param name="tableName">
+		/// The validated, optionally schema-qualified name of the table to create.
+		/// </param>
+		/// <param name="columnsInfo">The validated column names and the writers that fill them.</param>
+		/// <returns>A task that completes once the table exists.</returns>
+		public static async Task CreateTableAsync(NpgsqlConnection connection, string tableName, IDictionary<string, ColumnWriterBase> columnsInfo)
 		{
-			using var command = connection.CreateCommand();
+			await using var command = connection.CreateCommand();
+
+			// The table and column names are interpolated because PostgreSQL does not accept
+			// identifiers as query parameters. Both were validated as PostgreSQL identifiers by
+			// PostgreSQLSink's constructor, which is the only caller.
+			// nosemgrep: csharp.lang.security.sqli.csharp-sqli
 			command.CommandText = GetCreateTableQuery(tableName, columnsInfo);
-			command.ExecuteNonQuery();
+
+			await command.ExecuteNonQueryAsync().ConfigureAwait(false);
 		}
 
 		private static string GetCreateTableQuery(string tableName, IDictionary<string, ColumnWriterBase> columnsInfo)
@@ -62,7 +92,7 @@ namespace Serilog.Sinks.PostgreSql
 			NpgsqlDbType.Xml => "xml",
 			NpgsqlDbType.Json => "json",
 			NpgsqlDbType.Jsonb => "jsonb",
-			_ => throw new ArgumentOutOfRangeException(nameof(dbType), dbType, "Cannot atomatically create column of type " + dbType),
+			_ => throw new ArgumentOutOfRangeException(nameof(dbType), dbType, "Cannot automatically create column of type " + dbType),
 		};
 	}
 }

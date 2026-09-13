@@ -21,9 +21,14 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>

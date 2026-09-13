@@ -1,7 +1,5 @@
-﻿using Serilog.Events;
-using Serilog.Parsing;
+using Serilog.Sinks.PostgreSql.Tests.Support;
 using System;
-using System.Linq;
 using Xunit;
 
 namespace Serilog.Sinks.PostgreSql.Tests
@@ -13,23 +11,19 @@ namespace Serilog.Sinks.PostgreSql.Tests
 		{
 			var writer = new ExceptionColumnWriter();
 
-			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
-
-			var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(TestLogEvent.Create());
 
 			Assert.Equal(DBNull.Value, result);
 		}
 
 		[Fact]
-		public void ExceptionIsPresent_ShouldReturnStringrepresentation()
+		public void ExceptionIsPresent_ShouldReturnStringRepresentation()
 		{
 			var writer = new ExceptionColumnWriter();
 
-			var exception = new Exception("Test exception");
+			var exception = new InvalidOperationException("Test exception");
 
-			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, exception, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
-
-			var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(TestLogEvent.Create(exception: exception));
 
 			Assert.Equal(exception.ToString(), result);
 		}

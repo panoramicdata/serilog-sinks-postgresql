@@ -1,26 +1,22 @@
 using NpgsqlTypes;
-using Serilog.Events;
-using Serilog.Parsing;
+using Serilog.Sinks.PostgreSql.Tests.Support;
 using System;
-using System.Linq;
 using Xunit;
 
 namespace Serilog.Sinks.PostgreSql.Tests
 {
 	public class TimestampColumnWriterTest
 	{
+		private static readonly DateTimeOffset TestTimestamp = new(2017, 8, 13, 11, 11, 11, TimeSpan.Zero);
+
 		[Fact]
 		public void ByDefault_ShouldReturnTimestampValueWithoutTimezone()
 		{
 			var writer = new TimestampColumnWriter();
 
-			var timeStamp = new DateTimeOffset(2017, 8, 13, 11, 11, 11, new TimeSpan());
+			var result = writer.GetValue(TestLogEvent.Create(timestamp: TestTimestamp));
 
-			var testEvent = new LogEvent(timeStamp, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
-
-			var result = writer.GetValue(testEvent);
-
-			Assert.Equal(timeStamp.DateTime, result);
+			Assert.Equal(TestTimestamp.DateTime, result);
 		}
 
 		[Fact]
@@ -28,13 +24,9 @@ namespace Serilog.Sinks.PostgreSql.Tests
 		{
 			var writer = new TimestampColumnWriter(NpgsqlDbType.TimestampTz);
 
-			var timeStamp = new DateTimeOffset(2017, 8, 13, 11, 11, 11, new TimeSpan());
+			var result = writer.GetValue(TestLogEvent.Create(timestamp: TestTimestamp));
 
-			var testEvent = new LogEvent(timeStamp, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
-
-			var result = writer.GetValue(testEvent);
-
-			Assert.Equal(timeStamp, result);
+			Assert.Equal(TestTimestamp, result);
 		}
 	}
 }

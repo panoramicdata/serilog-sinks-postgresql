@@ -1,4 +1,4 @@
-﻿using NpgsqlTypes;
+using NpgsqlTypes;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 using System;
@@ -12,23 +12,31 @@ namespace Serilog.Sinks.PostgreSql
 	/// </summary>
 	public class LogEventSerializedColumnWriter : ColumnWriterBase
 	{
+		/// <summary>
+		/// Initialises a new instance writing to a <c>jsonb</c> column.
+		/// </summary>
 		public LogEventSerializedColumnWriter() : this(NpgsqlDbType.Jsonb) { }
 
-		public LogEventSerializedColumnWriter(NpgsqlDbType dbType) : base(dbType) {}
+		/// <summary>
+		/// Initialises a new instance writing to a column of the given type.
+		/// </summary>
+		/// <param name="dbType">The PostgreSQL type of the column being written.</param>
+		public LogEventSerializedColumnWriter(NpgsqlDbType dbType) : base(dbType) { }
 
-		public object GetValue(LogEvent logEvent)
-			=> GetValue(logEvent, null);
-
-		public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider)
+		/// <inheritdoc />
+		public override object GetValue(LogEvent logEvent, IFormatProvider? formatProvider)
 			=> LogEventToJson(logEvent, formatProvider);
 
-		private object LogEventToJson(LogEvent logEvent, IFormatProvider formatProvider)
+		private static object LogEventToJson(LogEvent logEvent, IFormatProvider? formatProvider)
 		{
 			var jsonFormatter = new JsonFormatter(formatProvider: formatProvider);
 
 			var sb = new StringBuilder();
 			using (var writer = new StringWriter(sb))
+			{
 				jsonFormatter.Format(logEvent, writer);
+			}
+
 			return sb.ToString();
 		}
 	}

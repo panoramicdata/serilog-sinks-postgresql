@@ -1,8 +1,8 @@
-﻿namespace Serilog.Sinks.PostgreSql.IntegrationTests.Objects
+namespace Serilog.Sinks.PostgreSql.IntegrationTests.Objects
 {
 	public class TestObjectType1
 	{
-		public string StringProp { get; set; }
+		public string? StringProp { get; set; }
 
 		public int IntProp { get; set; }
 	}

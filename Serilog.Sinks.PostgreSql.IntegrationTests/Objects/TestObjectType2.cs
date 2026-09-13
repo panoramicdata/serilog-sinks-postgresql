@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Serilog.Sinks.PostgreSql.IntegrationTests.Objects
 {
@@ -6,6 +6,6 @@ namespace Serilog.Sinks.PostgreSql.IntegrationTests.Objects
 	{
 		public DateTime DateProp1 { get; set; }
 
-		public TestObjectType1 NestedProp { get; set; }
+		public TestObjectType1? NestedProp { get; set; }
 	}
 }

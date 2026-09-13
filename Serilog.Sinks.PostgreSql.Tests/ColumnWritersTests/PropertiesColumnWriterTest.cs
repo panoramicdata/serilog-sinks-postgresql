@@ -1,7 +1,4 @@
-﻿using Serilog.Events;
-using Serilog.Parsing;
-using System;
-using System.Linq;
+using Serilog.Sinks.PostgreSql.Tests.Support;
 using Xunit;
 
 namespace Serilog.Sinks.PostgreSql.Tests
@@ -13,11 +10,19 @@ namespace Serilog.Sinks.PostgreSql.Tests
 		{
 			var writer = new PropertiesColumnWriter();
 
-			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
-
-			var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(TestLogEvent.Create());
 
 			Assert.Equal("{}", result);
+		}
+
+		[Fact]
+		public void SingleProperty_ShouldReturnJsonObjectWithThatProperty()
+		{
+			var writer = new PropertiesColumnWriter();
+
+			var result = writer.GetValue(TestLogEvent.WithProperty("TestProperty", "TestValue"));
+
+			Assert.Equal("{\"TestProperty\":\"TestValue\"}", result);
 		}
 	}
 }

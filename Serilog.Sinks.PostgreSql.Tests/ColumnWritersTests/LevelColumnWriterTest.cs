@@ -1,7 +1,5 @@
-﻿using Serilog.Events;
-using Serilog.Parsing;
-using System;
-using System.Linq;
+using Serilog.Events;
+using Serilog.Sinks.PostgreSql.Tests.Support;
 using Xunit;
 
 namespace Serilog.Sinks.PostgreSql.Tests
@@ -13,11 +11,9 @@ namespace Serilog.Sinks.PostgreSql.Tests
 		{
 			var writer = new LevelColumnWriter();
 
-			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
+			var result = writer.GetValue(TestLogEvent.Create(LogEventLevel.Debug));
 
-			var result = writer.GetValue(testEvent);
-
-			Assert.Equal(1, result);
+			Assert.Equal((int)LogEventLevel.Debug, result);
 		}
 
 		[Fact]
@@ -25,9 +21,7 @@ namespace Serilog.Sinks.PostgreSql.Tests
 		{
 			var writer = new LevelColumnWriter(true);
 
-			var testEvent = new LogEvent(DateTime.Now, LogEventLevel.Debug, null, new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>());
-
-			var result = writer.GetValue(testEvent);
+			var result = writer.GetValue(TestLogEvent.Create(LogEventLevel.Debug));
 
 			Assert.Equal(nameof(LogEventLevel.Debug), result);
 		}

@@ -2,37 +2,92 @@ name: CI
 
 on:
   push:
-	branches: [main]
+    branches: [main]
+    tags: ['[0-9]*.[0-9]*.[0-9]*']
   pull_request:
-	branches: [main]
-  release:
-	types: [published]
+    branches: [main]
 
 jobs:
   build:
-	runs-on: ubuntu-latest
-	steps:
-	- name: Checkout
-	  uses: actions/checkout@v7
-	  with:
-		fetch-depth: 0
+    runs-on: ubuntu-latest
 
-	- name: Setup .NET
-	  uses: actions/setup-dotnet@v6
-	  with:
-		dotnet-version: 10.0.x
+    services:
+      # The integration tests skip themselves when this is unreachable, so the job still works
+      # without it — but with it they actually exercise the sink against PostgreSQL.
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: serilog
+          POSTGRES_PASSWORD: serilog
+          POSTGRES_DB: serilog_logs
+        ports:
+        - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U serilog -d serilog_logs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
-	- name: Restore
-	  run: dotnet restore
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
 
-	- name: Build
-	  run: dotnet build --configuration Release --no-restore
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.0.x
 
-	- name: Pack
-	  run: dotnet pack --configuration Release --no-build --output ./artifacts
+    - name: Restore
+      run: dotnet restore
 
-	- name: Upload artifacts
-	  uses: actions/upload-artifact@v7
-	  with:
-		name: packages
-		path: ./artifacts/*.nupkg
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Create the integration test schema
+      run: PGPASSWORD=serilog psql -h localhost -U serilog -d serilog_logs -c "CREATE SCHEMA IF NOT EXISTS logs;"
+
+    # The test projects are Microsoft.Testing.Platform hosts, so each one is run directly: it
+    # reports its own results and exits non-zero on failure.
+    - name: Unit tests
+      run: dotnet run --project Serilog.Sinks.PostgreSql.Tests --configuration Release --no-build
+
+    - name: Integration tests
+      run: dotnet run --project Serilog.Sinks.PostgreSql.IntegrationTests --configuration Release --no-build
+
+    - name: Pack
+      run: dotnet pack --configuration Release --no-build --output ./artifacts
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: packages
+        path: ./artifacts/*.nupkg
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      id-token: write
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: packages
+        path: ./artifacts
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Login to NuGet
+      id: login
+      uses: NuGet/login@v1
+      with:
+        user: david_n_m_bond
+
+    - name: Push to NuGet
+      run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
