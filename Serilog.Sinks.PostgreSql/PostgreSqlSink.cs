@@ -201,28 +201,24 @@ namespace Serilog.Sinks.PostgreSql
 
 		private async Task ProcessEventsByInsertStatementsAsync(IEnumerable<LogEvent> events, NpgsqlConnection connection)
 		{
-			await using var command = connection.CreateCommand();
-
-			// Table and column names cannot be parameterised, so they are interpolated — but every one
-			// of them was validated as a PostgreSQL identifier by the constructor. The values are bound
-			// as parameters below.
-			// nosemgrep: csharp.lang.security.sqli.csharp-sqli
-			command.CommandText = GetInsertQuery();
+			// Identifiers were validated by the constructor; every value is bound as a positional parameter.
+			var insertQuery = GetInsertQuery();
 
 			foreach (var logEvent in events)
 			{
-				command.Parameters.Clear();
-				var index = 0;
+				var insert = new NpgsqlBatchCommand(insertQuery);
 
 				foreach (var columnOption in _columnOptions)
 				{
-					command.Parameters.AddWithValue(
-						 InsertParameterName(index++),
-						 columnOption.Value.DbType,
-						 GetColumnValue(columnOption.Value, logEvent, _formatProvider));
+					insert.Parameters.Add(new NpgsqlParameter
+					{
+						NpgsqlDbType = columnOption.Value.DbType,
+						Value = GetColumnValue(columnOption.Value, logEvent, _formatProvider),
+					});
 				}
 
-				await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+				await using var batch = new NpgsqlBatch(connection) { BatchCommands = { insert } };
+				await batch.ExecuteNonQueryAsync().ConfigureAwait(false);
 			}
 		}
 
@@ -247,15 +243,10 @@ namespace Serilog.Sinks.PostgreSql
 		{
 			var columns = string.Join(", ", _columnOptions.Keys);
 
-			// Placeholders are generated: a quoted column name may hold any character, so it cannot name one.
-			var parameters = string.Join(", ", Enumerable.Range(0, _columnOptions.Count).Select(i => ":" + InsertParameterName(i)));
+			// Positional placeholders: a quoted column name may hold any character, so it cannot name one.
+			var parameters = string.Join(", ", Enumerable.Range(1, _columnOptions.Count).Select(i => "$" + i.ToString(System.Globalization.CultureInfo.InvariantCulture)));
 
 			return $"INSERT INTO {_fullTableName} ({columns}) VALUES ({parameters})";
-		}
-
-		private static string InsertParameterName(int index)
-		{
-			return "p" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		private async Task WriteToStreamAsync(NpgsqlBinaryImporter writer, IEnumerable<LogEvent> entities)

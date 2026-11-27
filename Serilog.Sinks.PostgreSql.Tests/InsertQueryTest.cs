@@ -21,7 +21,7 @@ namespace Serilog.Sinks.PostgreSql.Tests
 			});
 
 			Assert.Equal(
-				"INSERT INTO \"logs\" (\"message\", \"x); DROP TABLE logs; --\") VALUES (:p0, :p1)",
+				"INSERT INTO \"logs\" (\"message\", \"x); DROP TABLE logs; --\") VALUES ($1, $2)",
 				sink.GetInsertQuery());
 		}
 
