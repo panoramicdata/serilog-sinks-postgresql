@@ -212,11 +212,12 @@ namespace Serilog.Sinks.PostgreSql
 			foreach (var logEvent in events)
 			{
 				command.Parameters.Clear();
+				var index = 0;
 
 				foreach (var columnOption in _columnOptions)
 				{
 					command.Parameters.AddWithValue(
-						 SqlIdentifier.Unquote(columnOption.Key),
+						 InsertParameterName(index++),
 						 columnOption.Value.DbType,
 						 GetColumnValue(columnOption.Value, logEvent, _formatProvider));
 				}
@@ -242,13 +243,19 @@ namespace Serilog.Sinks.PostgreSql
 			return $"COPY {_fullTableName}({columns}) FROM STDIN BINARY;";
 		}
 
-		private string GetInsertQuery()
+		internal string GetInsertQuery()
 		{
 			var columns = string.Join(", ", _columnOptions.Keys);
 
-			var parameters = string.Join(", ", _columnOptions.Keys.Select(cn => ":" + SqlIdentifier.Unquote(cn)));
+			// Placeholders are generated: a quoted column name may hold any character, so it cannot name one.
+			var parameters = string.Join(", ", Enumerable.Range(0, _columnOptions.Count).Select(i => ":" + InsertParameterName(i)));
 
 			return $"INSERT INTO {_fullTableName} ({columns}) VALUES ({parameters})";
+		}
+
+		private static string InsertParameterName(int index)
+		{
+			return "p" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		private async Task WriteToStreamAsync(NpgsqlBinaryImporter writer, IEnumerable<LogEvent> entities)
