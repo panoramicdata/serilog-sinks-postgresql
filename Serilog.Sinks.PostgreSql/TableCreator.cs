@@ -42,8 +42,8 @@ namespace Serilog.Sinks.PostgreSql
 			await using var command = connection.CreateCommand();
 
 			// The table and column names are interpolated because PostgreSQL does not accept
-			// identifiers as query parameters. Both were validated as PostgreSQL identifiers by
-			// PostgreSQLSink's constructor, which is the only caller.
+			// identifiers as query parameters. This method is public, so GetCreateTableQuery
+			// validates both again rather than trusting PostgreSQLSink's constructor.
 			// nosemgrep: csharp.lang.security.sqli.csharp-sqli
 			command.CommandText = GetCreateTableQuery(tableName, columnsInfo);
 
@@ -53,10 +53,10 @@ namespace Serilog.Sinks.PostgreSql
 		private static string GetCreateTableQuery(string tableName, IDictionary<string, ColumnWriterBase> columnsInfo)
 		{
 			var builder = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
-			builder.Append(tableName);
+			builder.Append(SqlIdentifier.ValidateQualifiedName(tableName, nameof(tableName)));
 			builder.AppendLine(" (");
 
-			builder.AppendLine(string.Join(",\n", columnsInfo.Select(r => $" {r.Key} {GetSqlTypeStr(r.Value.DbType)} ")));
+			builder.AppendLine(string.Join(",\n", columnsInfo.Select(r => $" {SqlIdentifier.Validate(r.Key, nameof(columnsInfo))} {GetSqlTypeStr(r.Value.DbType)} ")));
 
 			builder.AppendLine(")");
 

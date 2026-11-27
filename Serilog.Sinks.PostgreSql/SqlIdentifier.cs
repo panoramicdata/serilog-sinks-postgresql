@@ -64,6 +64,8 @@ namespace Serilog.Sinks.PostgreSql
 				throw new ArgumentException($"Identifier '{identifier}' exceeds the maximum length of {MaxLength} characters.", parameterName);
 			}
 
+			RejectControlCharacters(identifier, parameterName);
+
 			return "\"" + identifier.Replace("\"", "\"\"") + "\"";
 		}
 
@@ -197,7 +199,21 @@ namespace Serilog.Sinks.PostgreSql
 				throw new ArgumentException($"Quoted identifier {identifier} must be between 1 and {MaxLength} characters long.", parameterName);
 			}
 
+			RejectControlCharacters(inner, parameterName);
+
 			return identifier;
+		}
+
+		// A NUL ends the query text on the wire, leaving the quote open, so control characters are refused.
+		private static void RejectControlCharacters(string identifier, string parameterName)
+		{
+			foreach (var character in identifier)
+			{
+				if (char.IsControl(character))
+				{
+					throw new ArgumentException("An identifier cannot contain control characters.", parameterName);
+				}
+			}
 		}
 
 		private static string ValidatePlain(string identifier, string parameterName)
