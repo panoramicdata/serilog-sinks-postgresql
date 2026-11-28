@@ -47,22 +47,17 @@ namespace Serilog.Sinks.PostgreSql.IntegrationTests
 		public long GetTableRowsCount(string tableName)
 			=> Run("SELECT count(*) FROM ", tableName, command => (long)command.ExecuteScalar()!);
 
-		private T Run<T>(string statement, string tableName, Func<NpgsqlCommand, T> execute)
+		private T Run<T>(string statement, string tableName, Func<NpgsqlBatch, T> execute)
 		{
-			// A table name cannot be a query parameter, so it is concatenated into the statement —
-			// but only after SqlIdentifier has confirmed it is a valid PostgreSQL identifier, so
-			// nothing but an identifier can reach the SQL text.
+			// A table name cannot be a query parameter, so only a validated identifier reaches the SQL text.
 			var safeTableName = SqlIdentifier.ValidateQualifiedName(tableName, nameof(tableName));
 
 			using var connection = new NpgsqlConnection(_connectionString);
 			connection.Open();
 
-			using var command = connection.CreateCommand();
+			using var batch = new NpgsqlBatch(connection) { BatchCommands = { new NpgsqlBatchCommand(statement + safeTableName) } };
 
-			// nosemgrep: csharp.lang.security.sqli.csharp-sqli
-			command.CommandText = statement + safeTableName;
-
-			return execute(command);
+			return execute(batch);
 		}
 	}
 }

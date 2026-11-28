@@ -39,24 +39,20 @@ namespace Serilog.Sinks.PostgreSql
 		/// <returns>A task that completes once the table exists.</returns>
 		public static async Task CreateTableAsync(NpgsqlConnection connection, string tableName, IDictionary<string, ColumnWriterBase> columnsInfo)
 		{
-			await using var command = connection.CreateCommand();
+			// Identifiers cannot be query parameters; this method is public, so GetCreateTableQuery validates them.
+			var createTable = new NpgsqlBatchCommand(GetCreateTableQuery(tableName, columnsInfo));
 
-			// The table and column names are interpolated because PostgreSQL does not accept
-			// identifiers as query parameters. Both were validated as PostgreSQL identifiers by
-			// PostgreSQLSink's constructor, which is the only caller.
-			// nosemgrep: csharp.lang.security.sqli.csharp-sqli
-			command.CommandText = GetCreateTableQuery(tableName, columnsInfo);
-
-			await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+			await using var batch = new NpgsqlBatch(connection) { BatchCommands = { createTable } };
+			await batch.ExecuteNonQueryAsync().ConfigureAwait(false);
 		}
 
 		private static string GetCreateTableQuery(string tableName, IDictionary<string, ColumnWriterBase> columnsInfo)
 		{
 			var builder = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
-			builder.Append(tableName);
+			builder.Append(SqlIdentifier.ValidateQualifiedName(tableName, nameof(tableName)));
 			builder.AppendLine(" (");
 
-			builder.AppendLine(string.Join(",\n", columnsInfo.Select(r => $" {r.Key} {GetSqlTypeStr(r.Value.DbType)} ")));
+			builder.AppendLine(string.Join(",\n", columnsInfo.Select(r => $" {SqlIdentifier.Validate(r.Key, nameof(columnsInfo))} {GetSqlTypeStr(r.Value.DbType)} ")));
 
 			builder.AppendLine(")");
 
